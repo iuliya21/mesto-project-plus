@@ -6,31 +6,36 @@ type TCard = {
   owner: Types.ObjectId;
   likes: Types.ObjectId[];
   createdAt: Date;
-}
+};
 
-const cardSchema = new Schema<TCard>({
-  name: {
-    type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 30,
+const cardSchema = new Schema<TCard>(
+  {
+    name: {
+      type: String,
+      required: true,
+      minlength: 2,
+      maxlength: 30,
+    },
+    link: {
+      type: String,
+      required: true,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    likes: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  link: {
-    type: String,
-    required: true,
+  {
+    versionKey: false,
   },
-  owner: {
-    type: Schema.Types.ObjectId,
-    required: true,
-  },
-  likes: {
-    type: [Schema.Types.ObjectId],
-    default: [],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+);
 
 export default model<TCard>("card", cardSchema);
