@@ -1,28 +1,33 @@
 import { Request, Response } from "express";
 import User from "../models/user";
+import {
+  errorServer,
+  REQUEST_SUCCESS,
+  UPDATE_SUCCESS,
+  errorRequest,
+  dataUncorrect,
+} from "../errors";
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({});
-    res.status(200).send(users);
+    res.status(REQUEST_SUCCESS).send(users);
   } catch (error) {
-    res.status(500).send({ message: "Ошибка на стороне сервера" });
+    res.status(errorServer.code).send({ message: errorServer.message });
   }
 };
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const newUser = await User.create(req.body);
-    return res.status(201).send(newUser);
-  } catch (error: any) {
-    if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .send({ message: "Некорректные данные", error: error.message });
+    return res.status(UPDATE_SUCCESS).send(newUser);
+  } catch (error) {
+    if (error instanceof Error && error.name === "ValidationError") {
+      return res.status(dataUncorrect.code).send({
+        message: dataUncorrect.message,
+      });
     }
-    return res
-      .status(500)
-      .send({ message: "Ошибка на стороне сервера", error });
+    return res.status(errorServer.code).send({ message: errorServer.message });
   }
 };
 
@@ -32,11 +37,72 @@ export const getUser = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).send({ message: "Пользователь не найден" });
+      return res
+        .status(errorRequest.code)
+        .send({ message: errorRequest.message });
     }
 
-    return res.status(200).send(user);
+    return res.status(REQUEST_SUCCESS).send(user);
   } catch (error) {
-    return res.status(500).send({ message: "Ошибка на стороне сервера" });
+    return res.status(errorServer.code).send({ message: errorServer.message });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { name, about } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        name,
+        about,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    if (!user) {
+      return res
+        .status(errorRequest.code)
+        .send({ message: errorRequest.message });
+    }
+    return res.status(REQUEST_SUCCESS).send(user);
+  } catch (error) {
+    if (error instanceof Error && error.name === "ValidationError") {
+      return res.status(dataUncorrect.code).send({
+        message: dataUncorrect.message,
+      });
+    }
+    return res.status(errorServer.code).send({ message: errorServer.message });
+  }
+};
+
+export const updateUserAvatar = async (req: Request, res: Response) => {
+  try {
+    const { avatar } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        avatar,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    if (!user) {
+      return res
+        .status(errorRequest.code)
+        .send({ message: errorRequest.message });
+    }
+    return res.status(REQUEST_SUCCESS).send(user);
+  } catch (error) {
+    if (error instanceof Error && error.name === "ValidationError") {
+      return res.status(dataUncorrect.code).send({
+        message: dataUncorrect.message,
+      });
+    }
+    return res.status(errorServer.code).send({ message: errorServer.message });
   }
 };

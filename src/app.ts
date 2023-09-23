@@ -2,14 +2,6 @@ import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import router from "./routes";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: {_id: string};
-    }
-  }
-}
-
 const { PORT = 3000 } = process.env;
 
 const app = express();
@@ -28,5 +20,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(router);
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
 });
