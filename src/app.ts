@@ -1,10 +1,13 @@
 import express, { Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import mongoose from "mongoose";
 import router from "./routes";
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
+
+app.use(helmet());
 
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 

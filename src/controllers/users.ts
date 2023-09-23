@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import User from "../models/user";
 import {
   errorServer,
-  REQUEST_SUCCESS,
   UPDATE_SUCCESS,
   errorRequest,
   dataUncorrect,
@@ -11,7 +10,7 @@ import {
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({});
-    res.status(REQUEST_SUCCESS).send(users);
+    res.send(users);
   } catch (error) {
     res.status(errorServer.code).send({ message: errorServer.message });
   }
@@ -42,8 +41,11 @@ export const getUser = async (req: Request, res: Response) => {
         .send({ message: errorRequest.message });
     }
 
-    return res.status(REQUEST_SUCCESS).send(user);
+    return res.send(user);
   } catch (error) {
+    if (error instanceof Error && error.name === "CastError") {
+      return res.status(dataUncorrect.code).send(dataUncorrect.message);
+    }
     return res.status(errorServer.code).send({ message: errorServer.message });
   }
 };
@@ -67,7 +69,7 @@ export const updateUser = async (req: Request, res: Response) => {
         .status(errorRequest.code)
         .send({ message: errorRequest.message });
     }
-    return res.status(REQUEST_SUCCESS).send(user);
+    return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
       return res.status(dataUncorrect.code).send({
@@ -96,7 +98,7 @@ export const updateUserAvatar = async (req: Request, res: Response) => {
         .status(errorRequest.code)
         .send({ message: errorRequest.message });
     }
-    return res.status(REQUEST_SUCCESS).send(user);
+    return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
       return res.status(dataUncorrect.code).send({

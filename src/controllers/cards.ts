@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import {
   errorServer,
-  REQUEST_SUCCESS,
   UPDATE_SUCCESS,
   errorRequest,
   dataUncorrect,
@@ -11,7 +10,7 @@ import Card from "../models/card";
 export const getCards = async (req: Request, res: Response) => {
   try {
     const cards = await Card.find({});
-    res.status(REQUEST_SUCCESS).send(cards);
+    res.send(cards);
   } catch (error) {
     res.status(errorServer.code).send({ message: errorServer.message });
   }
@@ -46,8 +45,11 @@ export const deleteCard = async (req: Request, res: Response) => {
         .status(errorRequest.code)
         .send({ message: errorRequest.message });
     }
-    return res.status(REQUEST_SUCCESS).send(card);
+    return res.send(card);
   } catch (error) {
+    if (error instanceof Error && error.name === "CastError") {
+      return res.status(dataUncorrect.code).send(dataUncorrect.message);
+    }
     return res.status(errorServer.code).send({ message: errorServer.message });
   }
 };
@@ -67,9 +69,9 @@ export const likeCard = async (req: Request, res: Response) => {
         .send({ message: errorRequest.message });
     }
 
-    return res.status(REQUEST_SUCCESS).send(card);
+    return res.send(card);
   } catch (error) {
-    if (error instanceof Error && error.name === "ValidationError") {
+    if (error instanceof Error && error.name === "CastError") {
       return res.status(dataUncorrect.code).send({
         message: dataUncorrect.message,
       });
@@ -93,9 +95,9 @@ export const dislikeCard = async (req: Request, res: Response) => {
         .send({ message: errorRequest.message });
     }
 
-    return res.status(REQUEST_SUCCESS).send(card);
+    return res.send(card);
   } catch (error) {
-    if (error instanceof Error && error.name === "ValidationError") {
+    if (error instanceof Error && error.name === "CastError") {
       return res.status(dataUncorrect.code).send({
         message: dataUncorrect.message,
       });

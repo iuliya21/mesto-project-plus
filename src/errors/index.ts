@@ -1,4 +1,3 @@
-export const REQUEST_SUCCESS: number = 200;
 export const UPDATE_SUCCESS: number = 201;
 
 export const errorServer = {
