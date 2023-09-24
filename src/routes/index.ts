@@ -17,7 +17,7 @@ router.use("/users", userRouter, limiter);
 router.use("/cards", cardRouter, limiter);
 
 router.use((req: Request, res: Response) => {
-  res.status(errorRequest.code).send(errorRequest.message);
+  res.status(errorRequest.code).send({ message: errorRequest.message });
 });
 
 export default router;
