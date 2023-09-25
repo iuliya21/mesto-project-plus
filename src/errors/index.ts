@@ -14,3 +14,8 @@ export const dataUncorrect = {
   code: 400,
   message: "Переданы некорректные данные",
 };
+
+export const uncorrectLogin = {
+  code: 401,
+  message: "Неправильные почта или пароль",
+};

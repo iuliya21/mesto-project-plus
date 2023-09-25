@@ -1,11 +1,42 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import User from "../models/user";
 import {
   errorServer,
   UPDATE_SUCCESS,
   errorRequest,
   dataUncorrect,
+  uncorrectLogin,
 } from "../errors";
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(errorRequest.code)
+        .send({ message: errorRequest.message });
+    }
+
+    const matched = await bcrypt.compare(password, user.password);
+
+    if (matched) {
+      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+        expiresIn: "7d",
+      });
+      return res.send({ message: "Всё верно!", token });
+    }
+
+    return res
+      .status(uncorrectLogin.code)
+      .send({ message: uncorrectLogin.message });
+  } catch (error) {
+    return res.status(errorServer.code).send({ message: errorServer.message });
+  }
+};
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -18,7 +49,14 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const newUser = await User.create(req.body);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const newUser = await User.create({
+      name: req.body.name,
+      about: req.body.about,
+      avatar: req.body.avatar,
+      email: req.body.email,
+      password: hashedPassword,
+    });
     return res.status(UPDATE_SUCCESS).send(newUser);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
