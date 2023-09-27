@@ -10,6 +10,8 @@ import {
   uncorrectLogin,
 } from "../errors";
 
+export const jwtSecret = "secret-key123";
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -24,10 +26,11 @@ export const login = async (req: Request, res: Response) => {
     const matched = await bcrypt.compare(password, user.password);
 
     if (matched) {
-      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+      const token = jwt.sign({ _id: user._id }, jwtSecret, {
         expiresIn: "7d",
       });
-      return res.send({ message: "Всё верно!", token });
+      return res
+        .send({ token });
     }
 
     return res
@@ -82,7 +85,24 @@ export const getUser = async (req: Request, res: Response) => {
     return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(dataUncorrect.code).send(dataUncorrect.message);
+      return res.status(dataUncorrect.code).send({ message: dataUncorrect.message });
+    }
+    return res.status(errorServer.code).send({ message: errorServer.message });
+  }
+};
+
+export const getUserCurrent = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res
+        .status(errorRequest.code)
+        .send({ message: errorRequest.message });
+    }
+    return res.send(user);
+  } catch (error) {
+    if (error instanceof Error && error.name === "CastError") {
+      return res.status(dataUncorrect.code).send({ message: dataUncorrect.message });
     }
     return res.status(errorServer.code).send({ message: errorServer.message });
   }

@@ -1,7 +1,9 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
 import router from "./routes";
+import { createUser, login } from "./controllers/users";
+import auth from "./middlewares/auth";
 
 const { PORT = 3000 } = process.env;
 
@@ -13,12 +15,10 @@ mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
 app.use(express.json());
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  req.user = {
-    _id: "650b587207d6a133db66e72f",
-  };
-  next();
-});
+app.post("/signup", createUser);
+app.post("/signin", login);
+
+app.use(auth);
 
 app.use(router);
 
