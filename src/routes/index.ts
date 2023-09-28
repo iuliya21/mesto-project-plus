@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
-import { errorRequest } from "../errors";
+import { NOT_FOUND_CODE, NOT_FOUND_MESSAGE } from "../errors";
 import userRouter from "./users";
 import cardRouter from "./cards";
 
@@ -17,7 +17,7 @@ router.use("/users", userRouter, limiter);
 router.use("/cards", cardRouter, limiter);
 
 router.use((req: Request, res: Response) => {
-  res.status(errorRequest.code).send({ message: errorRequest.message });
+  res.status(NOT_FOUND_CODE).send({ message: NOT_FOUND_MESSAGE });
 });
 
 export default router;

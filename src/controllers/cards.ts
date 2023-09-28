@@ -1,22 +1,22 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
-  errorServer,
   UPDATE_SUCCESS,
-  errorRequest,
-  dataUncorrect,
+  DATA_INCORRECT_CODE,
+  DATA_INCORRECT_MESSAGE,
+  MyError,
 } from "../errors";
 import Card from "../models/card";
 
-export const getCards = async (req: Request, res: Response) => {
+export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (error) {
-    res.status(errorServer.code).send({ message: errorServer.message });
+    next(error);
   }
 };
 
-export const createCard = async (req: Request, res: Response) => {
+export const createCard = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, link } = req.body;
     const newCard = await Card.create({
@@ -27,34 +27,36 @@ export const createCard = async (req: Request, res: Response) => {
     return res.status(UPDATE_SUCCESS).send(newCard);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
-      return res.status(dataUncorrect.code).send({
-        message: dataUncorrect.message,
+      return res.status(DATA_INCORRECT_CODE).send({
+        message: DATA_INCORRECT_MESSAGE,
       });
     }
-    return res.status(errorServer.code).send({ message: errorServer.message });
+    return next(error);
   }
 };
 
-export const deleteCard = async (req: Request, res: Response) => {
+export const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { cardId } = req.params;
-    const card = await Card.findByIdAndRemove(cardId);
+    const card = await Card.findOneAndDelete({
+      _id: req.params.cardId,
+      owner: { _id: req.user._id },
+    });
 
     if (!card) {
-      return res
-        .status(errorRequest.code)
-        .send({ message: errorRequest.message });
+      throw MyError.NotFoundError("Запрашиваемая карточка не найдена");
     }
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(dataUncorrect.code).send(dataUncorrect.message);
+      return res.status(DATA_INCORRECT_CODE).send({
+        message: DATA_INCORRECT_MESSAGE,
+      });
     }
-    return res.status(errorServer.code).send({ message: errorServer.message });
+    return next(error);
   }
 };
 
-export const likeCard = async (req: Request, res: Response) => {
+export const likeCard = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { cardId } = req.params;
     const card = await Card.findByIdAndUpdate(
@@ -64,23 +66,21 @@ export const likeCard = async (req: Request, res: Response) => {
     );
 
     if (!card) {
-      return res
-        .status(errorRequest.code)
-        .send({ message: errorRequest.message });
+      throw MyError.NotFoundError("Запрашиваемая карточка не найдена");
     }
 
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(dataUncorrect.code).send({
-        message: dataUncorrect.message,
+      return res.status(DATA_INCORRECT_CODE).send({
+        message: DATA_INCORRECT_MESSAGE,
       });
     }
-    return res.status(errorServer.code).send({ message: errorServer.message });
+    return next(error);
   }
 };
 
-export const dislikeCard = async (req: Request, res: Response) => {
+export const dislikeCard = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { cardId } = req.params;
     const card = await Card.findByIdAndUpdate(
@@ -90,18 +90,16 @@ export const dislikeCard = async (req: Request, res: Response) => {
     );
 
     if (!card) {
-      return res
-        .status(errorRequest.code)
-        .send({ message: errorRequest.message });
+      throw MyError.NotFoundError("Запрашиваемая карточка не найдена");
     }
 
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(dataUncorrect.code).send({
-        message: dataUncorrect.message,
+      return res.status(DATA_INCORRECT_CODE).send({
+        message: DATA_INCORRECT_MESSAGE,
       });
     }
-    return res.status(errorServer.code).send({ message: errorServer.message });
+    return next(error);
   }
 };
