@@ -29,6 +29,10 @@ export class MyError extends Error {
   static IncorrectLoginError() {
     return new MyError("Неверные логин и пароль", 401);
   }
+
+  static ForbiddenError() {
+    return new MyError("Попытка удалить чужую карточку", 403);
+  }
 }
 
 export const checkError = (

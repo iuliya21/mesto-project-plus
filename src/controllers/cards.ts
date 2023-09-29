@@ -43,7 +43,7 @@ export const deleteCard = async (req: Request, res: Response, next: NextFunction
     });
 
     if (!card) {
-      throw MyError.NotFoundError("Запрашиваемая карточка не найдена");
+      throw MyError.ForbiddenError();
     }
     return res.send(card);
   } catch (error) {

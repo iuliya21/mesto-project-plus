@@ -6,6 +6,7 @@ import router from "./routes";
 import { createUser, login } from "./controllers/users";
 import auth from "./middlewares/auth";
 import { checkError } from "./errors";
+import { requestLogger, errorLogger } from "./middlewares/logger";
 
 const { PORT = 3000 } = process.env;
 
@@ -16,6 +17,8 @@ app.use(helmet());
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
 app.use(express.json());
+
+app.use(requestLogger);
 
 app.post("/signup", celebrate({
   body: Joi.object().keys({
@@ -37,6 +40,8 @@ app.post("/signin", celebrate({
 app.use(auth);
 
 app.use(router);
+
+app.use(errorLogger);
 
 app.use(errors());
 app.use(checkError);
