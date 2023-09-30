@@ -22,16 +22,24 @@ export class MyError extends Error {
     this.statusCode = statusCode;
   }
 
-  static NotFoundError(message: string) {
+  static NotFoundError(message: string): MyError {
     return new MyError(message, 404);
   }
 
   static IncorrectLoginError() {
-    return new MyError("Неверные логин и пароль", 401);
+    return new MyError("Неверные логин или пароль", 401);
   }
 
   static ForbiddenError() {
     return new MyError("Попытка удалить чужую карточку", 403);
+  }
+
+  static IncorrectData(): MyError {
+    return new MyError("Введены неверные данные", 400);
+  }
+
+  static DuplicateEmail(): MyError {
+    return new MyError("Такой Email уже существует", 409);
   }
 }
 
@@ -53,7 +61,7 @@ export const checkError = (
     .status(statusCode)
     .send({
       message:
-        statusCode === 400 ? "На стороне сервера произошла ошибка" : message,
+        statusCode === 500 ? "На стороне сервера произошла ошибка" : message,
     });
 
   next();

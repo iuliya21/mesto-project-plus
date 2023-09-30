@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
 import {
@@ -40,7 +40,11 @@ export const login = async (
   }
 };
 
-export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const users = await User.find({});
     res.send(users);
@@ -49,7 +53,11 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const createUser = async (req: Request, res: Response, next: NextFunction) => {
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const newUser = await User.create({
@@ -59,18 +67,30 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       email: req.body.email,
       password: hashedPassword,
     });
-    return res.status(UPDATE_SUCCESS).send(newUser);
-  } catch (error) {
+    return res.status(UPDATE_SUCCESS).send({
+      data: {
+        name: newUser.name,
+        about: newUser.about,
+        avatar: newUser.avatar,
+        email: newUser.email,
+      },
+    });
+  } catch (error: any) {
     if (error instanceof Error && error.name === "ValidationError") {
-      return res.status(DATA_INCORRECT_CODE).send({
-        message: DATA_INCORRECT_MESSAGE,
-      });
+      return next(MyError.IncorrectData());
+    }
+    if (error.code === 11000) {
+      return next(MyError.DuplicateEmail());
     }
     return next(error);
   }
 };
 
-export const getUser = async (req: Request, res: Response, next: NextFunction) => {
+export const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId);
@@ -89,7 +109,11 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-export const getUserCurrent = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserCurrent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -97,16 +121,15 @@ export const getUserCurrent = async (req: Request, res: Response, next: NextFunc
     }
     return res.send(user);
   } catch (error) {
-    if (error instanceof Error && error.name === "CastError") {
-      return res
-        .status(DATA_INCORRECT_CODE)
-        .send({ message: DATA_INCORRECT_MESSAGE });
-    }
     return next(error);
   }
 };
 
-export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+export const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { name, about } = req.body;
     const user = await User.findByIdAndUpdate(
@@ -134,7 +157,11 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const updateUserAvatar = async (req: Request, res: Response, next: NextFunction) => {
+export const updateUserAvatar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { avatar } = req.body;
     const user = await User.findByIdAndUpdate(

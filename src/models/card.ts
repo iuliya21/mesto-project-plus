@@ -23,10 +23,12 @@ const cardSchema = new Schema<TCard>(
     owner: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: "user",
     },
     likes: {
       type: [Schema.Types.ObjectId],
       default: [],
+      ref: "user",
     },
     createdAt: {
       type: Date,

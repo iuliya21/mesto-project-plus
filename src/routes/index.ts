@@ -1,10 +1,12 @@
-import { Router, Request, Response } from "express";
+import {
+  Router, Request, Response, NextFunction,
+} from "express";
 import rateLimit from "express-rate-limit";
-import { NOT_FOUND_CODE, NOT_FOUND_MESSAGE } from "../errors";
+import { MyError } from "../errors";
 import userRouter from "./users";
 import cardRouter from "./cards";
 
-const limiter = rateLimit({
+export const limiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 1000,
   message:
@@ -13,11 +15,14 @@ const limiter = rateLimit({
 
 const router = Router();
 
-router.use("/users", userRouter, limiter);
-router.use("/cards", cardRouter, limiter);
+router.use("/users", userRouter);
+router.use("/cards", cardRouter);
 
-router.use((req: Request, res: Response) => {
-  res.status(NOT_FOUND_CODE).send({ message: NOT_FOUND_MESSAGE });
+router.use((req: Request, res: Response, next: NextFunction) => {
+  const error = MyError.NotFoundError(
+    "Запрашиваемая страница не найдена",
+  );
+  next(error);
 });
 
 export default router;

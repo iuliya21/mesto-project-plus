@@ -2,11 +2,12 @@ import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
 import { celebrate, Joi, errors } from "celebrate";
-import router from "./routes";
+import router, { limiter } from "./routes";
 import { createUser, login } from "./controllers/users";
 import auth from "./middlewares/auth";
 import { checkError } from "./errors";
 import { requestLogger, errorLogger } from "./middlewares/logger";
+import { urlRegExp } from "./validation";
 
 const { PORT = 3000 } = process.env;
 
@@ -18,6 +19,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
 app.use(express.json());
 
+app.use(limiter);
+
 app.use(requestLogger);
 
 app.post("/signup", celebrate({
@@ -26,7 +29,7 @@ app.post("/signup", celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(200),
-    avatar: Joi.string().uri(),
+    avatar: Joi.string().pattern(urlRegExp),
   }),
 }), createUser);
 
