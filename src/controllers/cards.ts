@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import {
   UPDATE_SUCCESS,
-  DATA_INCORRECT_CODE,
-  DATA_INCORRECT_MESSAGE,
   MyError,
 } from "../errors";
 import Card from "../models/card";
@@ -27,9 +25,7 @@ export const createCard = async (req: Request, res: Response, next: NextFunction
     return res.status(UPDATE_SUCCESS).send(newCard);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
-      return res.status(DATA_INCORRECT_CODE).send({
-        message: DATA_INCORRECT_MESSAGE,
-      });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
@@ -48,9 +44,7 @@ export const deleteCard = async (req: Request, res: Response, next: NextFunction
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(DATA_INCORRECT_CODE).send({
-        message: DATA_INCORRECT_MESSAGE,
-      });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
@@ -62,7 +56,7 @@ export const likeCard = async (req: Request, res: Response, next: NextFunction) 
     const card = await Card.findByIdAndUpdate(
       cardId,
       { $addToSet: { likes: req.user._id } },
-      { new: true, runValidators: true },
+      { new: true },
     );
 
     if (!card) {
@@ -72,9 +66,7 @@ export const likeCard = async (req: Request, res: Response, next: NextFunction) 
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(DATA_INCORRECT_CODE).send({
-        message: DATA_INCORRECT_MESSAGE,
-      });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
@@ -86,7 +78,7 @@ export const dislikeCard = async (req: Request, res: Response, next: NextFunctio
     const card = await Card.findByIdAndUpdate(
       cardId,
       { $pull: { likes: req.user._id } },
-      { new: true, runValidators: true },
+      { new: true },
     );
 
     if (!card) {
@@ -96,9 +88,7 @@ export const dislikeCard = async (req: Request, res: Response, next: NextFunctio
     return res.send(card);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res.status(DATA_INCORRECT_CODE).send({
-        message: DATA_INCORRECT_MESSAGE,
-      });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }

@@ -5,8 +5,6 @@ import User from "../models/user";
 import {
   UPDATE_SUCCESS,
   MyError,
-  DATA_INCORRECT_CODE,
-  DATA_INCORRECT_MESSAGE,
   USER_NOT_FOUND,
 } from "../errors";
 
@@ -147,9 +145,7 @@ export const updateUser = async (
     return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
-      return res
-        .status(DATA_INCORRECT_CODE)
-        .send({ message: DATA_INCORRECT_MESSAGE });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
@@ -178,9 +174,7 @@ export const updateUserAvatar = async (
     return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "ValidationError") {
-      return res
-        .status(DATA_INCORRECT_CODE)
-        .send({ message: DATA_INCORRECT_MESSAGE });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
