@@ -101,9 +101,7 @@ export const getUser = async (
     return res.send(user);
   } catch (error) {
     if (error instanceof Error && error.name === "CastError") {
-      return res
-        .status(DATA_INCORRECT_CODE)
-        .send({ message: DATA_INCORRECT_MESSAGE });
+      return next(MyError.IncorrectData());
     }
     return next(error);
   }
